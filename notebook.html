@@ -6,6 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>notebook</title>
+    <script src="../vue.js"></script>
+    <script src="http://unpkg.com/marked"></script>
     <style>
         body {
             margin: 0;
@@ -52,7 +54,9 @@
 
 <body>
     <div id="notebook">
-        <div class="notebook">notebook</div>
+        <div class="notebook">
+            <button v-on:click="addNote">Add notes</button>
+        </div>
         <div class="input">
             <textarea v-model="content"></textarea>
         </div>
@@ -68,7 +72,8 @@
         var vm = new Vue({
             el: '#notebook',
             data: {
-                content: ''
+                content: '',
+                notes:[],
             },
             computed: {
                 markdownPreview() {
@@ -83,6 +88,22 @@
             },
             created() {
                 this.content = localStorage.getItem('content')
+            },
+
+            methods:{
+                addNote(){
+                    console.log("add note is called")
+                    const time=Date.now()
+                    // console.log(String(time))
+                    const note={
+                        id:String(time),
+                        title:'New note'+(this.note.length+1),
+                        content:'**Hi**',
+                        created:time,
+                        favorite:false,
+                    }
+                    this.notes.push(note)
+                }
             }
         })
     </script>
