@@ -1,39 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>notebook</title>
     <style>
-        body{
+        body {
             margin: 0;
         }
 
-        #notebook{
+        #notebook {
             display: flex;
             flex-direction: row-reverse;
         }
-        
-        .notebook,.input,.preview{
-            border:0px solid red ;
-            height:1000px;
+
+        .notebook,
+        .input,
+        .preview {
+            border: 0px solid red;
+            height: 1000px;
         }
-        .notebook{
+
+        .notebook {
             background-color: rgba(199, 122, 122, 0.452);
             width: 20%;
             position: absolute;
             left: 0%;
             top: 0%;
         }
-        .input{
+
+        .input {
             background-color: rgb(118, 231, 118);
             width: 40%;
             position: absolute;
             left: 20%;
             top: 0%;
         }
-        .preview{
+
+        .preview {
             background-color: rgb(49, 202, 202);
             width: 60%;
             position: absolute;
@@ -41,30 +47,45 @@
             top: 0%;
 
         }
-       
     </style>
 </head>
+
 <body>
     <div id="notebook">
         <div class="notebook">notebook</div>
         <div class="input">
             <textarea v-model="content"></textarea>
         </div>
-        <div class="preview">{{content}}</div>
-
+        <div class="preview" v-html="markdownPreview">
+        </div>
     </div>
 
     <script>
-        const html=marked('#hello')
-        console.log(html)
-        const html_strong=marked('**notice**')
-        console.log(html_strong)
-        var vm=new Vue({
-            el:'notebook',
-            data:{
-                content:'test'
+        // const html=marked('#hello')
+        // console.log(html)
+        // const html_strong=marked('**notice**')
+        // console.log(html_strong)
+        var vm = new Vue({
+            el: '#notebook',
+            data: {
+                content: ''
+            },
+            computed: {
+                markdownPreview() {
+                    return marked(this.content)
+                }
+            },
+            watch: {
+                content(val, oldval) {
+                    console.log("new: ", val, "old", oldval)
+                    localStorage.setItem('content', val)
+                }
+            },
+            created() {
+                this.content = localStorage.getItem('content')
             }
         })
     </script>
 </body>
+
 </html>
