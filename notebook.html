@@ -3,11 +3,11 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>notebook</title>
-    <script src="../vue.js"></script>
-    <script src="http://unpkg.com/marked"></script>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/marked"></script>
+    <title>Markdown Editer</title>
     <style>
         body {
             margin: 0;
@@ -15,98 +15,154 @@
 
         #notebook {
             display: flex;
-            flex-direction: row-reverse;
         }
 
         .notebook,
         .input,
         .preview {
-            border: 0px solid red;
             height: 1000px;
         }
 
         .notebook {
-            background-color: rgba(199, 122, 122, 0.452);
+            background-color: bisque;
             width: 20%;
-            position: absolute;
-            left: 0%;
-            top: 0%;
+        }
+
+        textarea {
+            width: 98%;
+            height: 100%;
+            background-color: aquamarine
         }
 
         .input {
-            background-color: rgb(118, 231, 118);
+            background-color: aquamarine;
             width: 40%;
-            position: absolute;
-            left: 20%;
-            top: 0%;
         }
 
         .preview {
-            background-color: rgb(49, 202, 202);
-            width: 60%;
-            position: absolute;
-            left: 60%;
-            top: 0%;
+            background-color: aqua;
+            width: 40%;
+        }
 
+        button,
+        .note.selected {
+            background: #40b883;
+            height: 30px;
+        }
+
+        .note {
+            height: 30px;
+            background-color: coral;
+            border: 0.5px solid white;
+            margin-top: 1px;
+            text-align: center;
         }
     </style>
 </head>
 
 <body>
     <div id="notebook">
+
         <div class="notebook">
-            <button v-on:click="addNote">Add notes</button>
+            <button v-bind:title="notes.length" v-on:click="addNote">Add Note</button>
+            <div class="note" v-for="note in notes" @click="selectNote(note)" :class="{selected: note===selectedNote}">
+                {{note.title}}
+            </div>
         </div>
-        <div class="input">
-            <textarea v-model="content"></textarea>
-        </div>
-        <div class="preview" v-html="markdownPreview">
-        </div>
+
+        <template v-if="selectedNote">
+
+            <div class="input">
+                <div class="toolbar">
+                    <!-- our toolbar is here -->
+                    <input type="text" placeholder="input new name" v-model="selectedNote.title">
+                    <button @click="removeNote">delete</button>
+                </div>
+                <textarea v-model="selectedNote.content"></textarea>
+            </div>
+
+            <div class="preview" v-html="markdownPreview">
+            </div>
+
+        </template>
     </div>
 
     <script>
-        // const html=marked('#hello')
+        // const html=marked('# hello')
         // console.log(html)
         // const html_strong=marked('**notice**')
         // console.log(html_strong)
         var vm = new Vue({
-            el: '#notebook',
+            el: "#notebook",
             data: {
-                content: '',
-                notes:[],
-            },
-            computed: {
-                markdownPreview() {
-                    return marked(this.content)
-                }
-            },
-            watch: {
-                content(val, oldval) {
-                    console.log("new: ", val, "old", oldval)
-                    localStorage.setItem('content', val)
-                }
-            },
-            created() {
-                this.content = localStorage.getItem('content')
+                // content: '',
+                notes: JSON.parse(localStorage.getItem('notes')) || [],
+                selectedId: localStorage.getItem('selected-id') || null,
             },
 
-            methods:{
-                addNote(){
+            computed: {
+                markdownPreview() {
+                    return this.selectedNote ? marked(this.selectedNote.content) : ''
+                },
+
+                selectedNote() {
+                    return this.notes.find(note => note.id === this.selectedId)
+                }
+            },
+
+            created() {
+                // this.content = localStorage.getItem('content') || "you can write in **markdown**"
+            },
+
+            watch: {
+                notes: {
+                    handler: 'saveNotes',
+                    deep: true,
+                },
+
+                selectedId(val) {
+                    localStorage.setItem('selected-id', val)
+                    console.log("save selected-id",this.selectedId)
+                }
+            },
+
+            methods: {
+                addNote() {
                     console.log("add note is called")
-                    const time=Date.now()
-                    // console.log(String(time))
-                    const note={
-                        id:String(time),
-                        title:'New note'+(this.note.length+1),
-                        content:'**Hi**',
-                        created:time,
-                        favorite:false,
+                    const time = Date.now()
+                    const note = {
+                        id: String(time),
+                        title: 'New note' + (this.notes.length + 1),
+                        content: '**Hi**',
+                        created: time,
+                        favorite: false,
                     }
                     this.notes.push(note)
+                },
+
+                removeNote() {
+                    console.log("remove note!")
+                    if (this.selectedNote && confirm('Delete the note?')) {
+                        const index = this.notes.indexOf(this.selectedNote)
+                        if (index !== -1) {
+                            this.notes.splice(index, 1)
+                        }
+                    }
+                },
+
+                selectNote(note) {
+                    this.selectedId = note.id
+                    // console.log(this.selectedId)
+                },
+
+                saveNotes() {
+                    localStorage.setItem('notes', JSON.stringify(this.notes)),
+                        console.log('Notes saved!', new Date())
                 }
             }
         })
     </script>
+
 </body>
 
 </html>
